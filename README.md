@@ -8,10 +8,12 @@ MailBot is mainly made for personal use so code is not guaranteed to work for ev
 
 ## What is implemented
 - Log into informed delivery, scrape the letter mail data for that day
+- Scraped data for incoming packages
 
 ## Dependencies
 
-## Things left to do##
-- scrape incoming package information
+## TO DO
+- add package scraping functionality to discord bot functionality
+- add retry and error checking logic
 - implement scraping information given a tracking number(s) using the USPS api
 - revamp README so that it looks good

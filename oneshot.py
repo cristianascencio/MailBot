@@ -1,4 +1,4 @@
-import os, re, requests, discord, io, asyncio
+import os, re, requests, discord, io, asyncio, string
 
 from dotenv import load_dotenv
 from discord.ext import commands
@@ -20,14 +20,17 @@ async def scrapeid():
     options = FirefoxOptions()
     profile = webdriver.FirefoxProfile()
     profile.set_preference("general.useragent.override", "[user-agent string]")
-    options.add_argument('--headless')
+    # options.add_argument('--headless')
+    options.add_argument('--start-maximized')
     driver = webdriver.Firefox(executable_path="c:\geckodriver.exe", firefox_options=options, firefox_profile=profile)
     driver.get(
         "https://reg.usps.com/portal/login?app=RMIN&appURL=https%3A%2F%2Finformeddelivery.usps.com%2Fbox%2Fpages%2Fintro%2Fstart.action%3Frestart%3D1")
     driver.find_element_by_id("username").send_keys(user)
     driver.find_element_by_id("password").send_keys(password)
     driver.find_element_by_id("btn-submit").click()
-    driver.implicitly_wait(5)
+
+    await asyncio.sleep(5)
+
     today = datetime.today().strftime("%m/%d/%Y")
     driver.find_element_by_id(today).click()
     num_mail = int(re.findall("\d{1,2}", driver.find_element_by_id(today).text)[0])
@@ -63,8 +66,36 @@ async def scrapeid():
 
             await channel.send(response, files=my_files)
 
+    packages = driver.find_elements_by_class_name("pack_row")
+    driver.find_element_by_id("pkgtab").click()
+
+    msg = "\n"
+    num_pkg = 0
+    for pkg in packages:
+        status = pkg.find_element_by_class_name("pack_status-bigNumber")
+        details = pkg.find_element_by_class_name("pack_details")
+        lastscan = pkg.find_element_by_class_name("pack_lastscan_desk")
+
+        if len(details.find_elements_by_class_name("pack_green")) != 0:
+            break
+
+        num_pkg += 1
+        msg += "Package {}".format(num_pkg)
+        msg += "```Tracking number: " + details.find_element_by_class_name("pack_h4").text + "\n"
+        month = str(status.find_element_by_class_name("date-small.pack_blue").text).title()
+        msg += "Expected Delivery {} {} ".format(month, status.find_element_by_class_name("date-num-large.pack_blue").text)
+        msg += re.findall("(by .*$|between .*$)", details.find_element_by_class_name("pack_blue").text)[0]
+        scan = "\t" + str(lastscan.text).replace("\n", "\n\t")
+        msg += "\nLast Scan:\n{}".format(scan)
+        msg += "```"
+
+    if num_pkg > 0:
+        await channel.send("There are {} incoming packages".format(num_pkg) + msg)
+
     await channel.send("That's all for today! See you tomorrow!")
+    driver.close()
     await bot.close()
+
 
 bot.loop.create_task(scrapeid())
 bot.run(TOKEN)

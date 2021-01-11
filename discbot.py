@@ -1,16 +1,9 @@
-import aiocron
-import discord
-import io
-import os
-import re
-import aiohttp
-import requests
+import aiocron, discord, io, os, re, requests
 
 from datetime import datetime
 from discord.ext import commands
 from dotenv import load_dotenv
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver import FirefoxOptions
 from usps import USPSApi
 
@@ -20,7 +13,7 @@ USER = os.getenv('DISCORD_USER')
 bot = commands.Bot(command_prefix="!")
 
 
-@bot.command(name="qt", help="Quick Track - call function with a USPS tracking number to view the tracking details")
+@bot.command(name="track", help="Track - call function with a USPS tracking number to view the tracking details")
 async def track(ctx, package: str):
     api = os.getenv("USPS_API")
     usps = USPSApi(api)
