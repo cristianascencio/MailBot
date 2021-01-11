@@ -11,7 +11,7 @@ MailBot is mainly made for personal use so code is not guaranteed to work for ev
 
 ## Dependencies
 
-## Things left to do##
+## Things left to do
 - scrape incoming package information
 - implement scraping information given a tracking number(s) using the USPS api
 - revamp README so that it looks good
